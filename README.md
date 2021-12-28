@@ -1,2 +1,2 @@
-# img_permutation
+#Image permutation generation
 Image permutation generation

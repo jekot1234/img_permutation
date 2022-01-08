@@ -129,8 +129,8 @@ if __name__ == '__main__':
         i = 0
         for index in path_indexes:
             element = Image.open(file_paths[i][index], 'r')
-            el = colorize(element, hue_arr[hue_indexes[i]])
-            image.paste(el, (0, 0), el)
+            #el = colorize(element, hue_arr[hue_indexes[i]])
+            image.paste(element, (0, 0), element)
             i += 1
 
         mode = image.mode

@@ -12,7 +12,7 @@ hsv_to_rgb = np.vectorize(colorsys.hsv_to_rgb)
 def shift_hue(arr, hout):
     r, g, b, a = np.rollaxis(arr, axis=-1)
     h, s, v = rgb_to_hsv(r, g, b)
-    h = hout
+    h += hout
     r, g, b = hsv_to_rgb(h, s, v)
     arr = np.dstack((r, g, b, a))
     return arr
@@ -22,7 +22,6 @@ def colorize(img, hue):
     Colorize PIL image `original` with the given
     `hue` (hue within 0-360); returns another PIL image.
     """
-    print(hue)
     arr = np.array(np.asarray(img).astype('float'))
     new_img = Image.fromarray(shift_hue(arr, hue/360.).astype('uint8'), 'RGBA')
 
@@ -73,7 +72,6 @@ if __name__ == '__main__':
 
     dirs = os.listdir(main_path)
     calsses = len(dirs)
-    print(f'{calsses} classes:')
 
     file_paths = []
     try:
@@ -86,33 +84,43 @@ if __name__ == '__main__':
     perm = Permutation_counter(hue)
     i = 0
     for dir in dirs:
-        print(f'\t{dir}')
-        file_paths.append([])
-        files = os.listdir(os.path.join(main_path, dir))
-        if len(files) > 0:
-            perm.add_sign(len(files))
-        for file in files:
-            path = os.path.join(main_path, dir, file)
-            if os.path.isfile(path):    
-                file_paths[i].append(path)
-        i += 1
+        if os.path.isdir(os.path.join(main_path, dir)):
+            file_paths.append([])
+            files = os.listdir(os.path.join(main_path, dir))
+            fs = 0
+            for file in files:
+                path = os.path.join(main_path, dir, file)
+                if os.path.isfile(path) and path.endswith('png'):    
+                    file_paths[i].append(path)
+                    fs += 1
+            if fs > 0:
+                perm.add_sign(fs)
+            i += 1
+
 
     counter = 0
 
+
+    size = (500, 500)
+    with Image.open(file_paths[0][0], 'r') as im:
+        size = im.size
+
+    
     while 1:
         indexes = perm.get()
-        path_indexes = indexes // perm.hue
-        hue_indexes = indexes % perm.hue
-        image = Image.new('RGBA', (500, 500))
         if indexes is not None:
-            i = 0
-            for index in path_indexes:
-                element = Image.open(file_paths[i][index], 'r')
-                el = colorize(element, hue_arr[hue_indexes[i]])
-                image.paste(el, (0, 0), el)
-                i += 1
+            path_indexes = indexes // perm.hue
+            hue_indexes = indexes % perm.hue
         else:
             break
+        image = Image.new('RGBA', size)
+        i = 0
+        for index in path_indexes:
+            element = Image.open(file_paths[i][index], 'r')
+            el = colorize(element, hue_arr[hue_indexes[i]])
+            image.paste(el, (0, 0), el)
+            i += 1
+        print(f'Saving {counter}.png')
         image.save(os.path.join('results', str(counter) + '.png'))
         counter += 1
 

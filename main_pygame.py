@@ -13,7 +13,7 @@ hsv_to_rgb = np.vectorize(colorsys.hsv_to_rgb)
 def shift_hue(arr, hout):
     r, g, b, a = np.rollaxis(arr, axis=-1)
     h, s, v = rgb_to_hsv(r, g, b)
-    h += hout
+    h += hout 
     r, g, b = hsv_to_rgb(h, s, v)
     arr = np.dstack((r, g, b, a))
     return arr
@@ -58,9 +58,8 @@ class Permutation_counter:
         self.stop = True
         return np.array(ret, dtype=np.uint16)
 
-            
-
 if __name__ == '__main__':
+
 
     pygame.init()
 
@@ -77,13 +76,21 @@ if __name__ == '__main__':
     dirs = os.listdir(main_path)
     calsses = len(dirs)
 
+    if not os.path.isdir('results'):
+        os.mkdir('results')
+
     file_paths = []
     try:
         hue = int(sys.argv[2])
     except:
         hue = 1
+
+    try:
+        offset = int(sys.argv[3])
+    except:
+        offset = 0
     
-    hue_arr = np.arange(start = 0, stop = 360, step=360/hue, dtype=np.uint16)
+    hue_arr = np.arange(start = 0, stop = 360, step=360/hue, dtype=np.uint16) + offset
 
     perm = Permutation_counter(hue)
     i = 0
@@ -100,11 +107,7 @@ if __name__ == '__main__':
             if fs > 0:
                 perm.add_sign(fs)
             i += 1
-
-
     counter = 0
-
-
     size = (500, 500)
     with Image.open(file_paths[0][0], 'r') as im:
         size = im.size
@@ -113,42 +116,30 @@ if __name__ == '__main__':
 
     next = True
     while 1:
-        if next == True:
-            next = False
-            indexes = perm.get()
-            if indexes is not None:
-                path_indexes = indexes // perm.hue
-                hue_indexes = indexes % perm.hue
-            else:
-                break
-            image = Image.new('RGBA', size)
-            i = 0
-            for index in path_indexes:
-                element = Image.open(file_paths[i][index], 'r')
-                el = colorize(element, hue_arr[hue_indexes[i]])
-                image.paste(el, (0, 0), el)
-                i += 1
 
-            mode = image.mode
-            size = image.size
-            data = image.tobytes()
-            pygm_image = pygame.image.fromstring(data, size, mode)
-            display.blit(pygm_image, (0, 0))
-            pygame.display.update()
+        next = False
+        indexes = perm.get()
+        if indexes is not None:
+            path_indexes = indexes // perm.hue
+            hue_indexes = indexes % perm.hue
         else:
-            pass
+            break
+        image = Image.new('RGBA', size)
+        i = 0
+        for index in path_indexes:
+            element = Image.open(file_paths[i][index], 'r')
+            el = colorize(element, hue_arr[hue_indexes[i]])
+            image.paste(el, (0, 0), el)
+            i += 1
+
+        mode = image.mode
+        size = image.size
+        data = image.tobytes()
+        pygm_image = pygame.image.fromstring(data, size, mode)
+        display.blit(pygm_image, (0, 0))
+        pygame.display.update()
+        image.save(os.path.join('results', str(counter) + '.png'))
+        counter += 1
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    print('saving')
-                    image.save(os.path.join('results', str(counter) + '.png'))
-                    counter += 1
-                    next = True
-                elif event.key == pygame.K_BACKSPACE:
-                    print('skipping')
-                    next = True
             if event.type == pygame.QUIT:
                 exit()
-
-        
-

@@ -74,6 +74,7 @@ if __name__ == '__main__':
         exit()
 
     dirs = os.listdir(main_path)
+    dirs.sort()
     calsses = len(dirs)
 
     if not os.path.isdir('results'):

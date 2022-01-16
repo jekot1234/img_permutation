@@ -33,6 +33,10 @@ class Permutation_counter:
         self.stop = True
         return ret
 
+    def skip(self, val):
+        for i in range(val):
+            self.get()
+
             
 
 if __name__ == '__main__':

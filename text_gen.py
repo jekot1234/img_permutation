@@ -21,10 +21,10 @@ if __name__ == '__main__':
     try:
         print(f'skipping {sys.argv[1]}')
         perm.skip(int(sys.argv[1]))
-        counter = sys.argv[1]
+        counter = int(sys.argv[1])
     except:
         print('no skip')
-        pass
+        pass 
 
     while 1:
         indexes = perm.get()
